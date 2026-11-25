@@ -2,46 +2,72 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<ol class="breadcrumb">
-    <li>Overview</li>
-    <li>/</li>
-    <li>Dashboard</li>
-</ol>
-<h1 class="page-title">Dashboard</h1>
+<div class="welcome-banner">
+    <div>
+        <h1>Welcome back, {{ $user->name }}</h1>
+        <p>{{ $user->position ?? strtoupper($user->role) }} &bull; {{ $user->department ?? 'AMINEF Jakarta Office' }}</p>
+    </div>
+    @if($user->hasMenuAccess('leaves'))
+        <a href="{{ route('leaves.index') }}" class="btn-welcome-cta">
+            <i data-lucide="plus" style="width:15px;height:15px;"></i>
+            Request Leave
+        </a>
+    @endif
+</div>
 
 <div class="stats-grid">
     <div class="stat-box">
-        <div class="stat-label">Annual Leave Balance</div>
-        <div class="stat-value">{{ rtrim(rtrim(number_format((float) $user->annual_leave_balance, 1), '0'), '.') }} <span style="font-size:14px;font-weight:500;color:#64748b;">days</span></div>
-        <div class="stat-sub">Available for {{ now()->year }}</div>
+        <div>
+            <div class="stat-label">Annual Leave Balance</div>
+            <div class="stat-value">{{ rtrim(rtrim(number_format((float) $user->annual_leave_balance, 1), '0'), '.') }} <span style="font-size:14px;font-weight:500;color:#64748b;">days</span></div>
+            <div class="stat-sub">Available for {{ now()->year }}</div>
+        </div>
+        <div class="stat-icon-chip">
+            <i data-lucide="calendar-check" style="width:20px;height:20px;"></i>
+        </div>
     </div>
     <div class="stat-box amber">
-        <div class="stat-label">My Pending Requests</div>
-        <div class="stat-value">{{ $myPendingLeaves }}</div>
-        <div class="stat-sub">Waiting for supervisor approval</div>
+        <div>
+            <div class="stat-label">My Pending Requests</div>
+            <div class="stat-value">{{ $myPendingLeaves }}</div>
+            <div class="stat-sub">Waiting for supervisor approval</div>
+        </div>
+        <div class="stat-icon-chip">
+            <i data-lucide="clock" style="width:20px;height:20px;"></i>
+        </div>
     </div>
     @if($user->canApprove())
         <div class="stat-box blue">
-            <div class="stat-label">Leave Approval</div>
-            <div class="stat-value">{{ $approvalQueueCount }}</div>
-            <div class="stat-sub"><a href="{{ route('approvals.index') }}">Review pending leave approvals &rarr;</a></div>
+            <div>
+                <div class="stat-label">Leave Approval</div>
+                <div class="stat-value">{{ $approvalQueueCount }}</div>
+                <div class="stat-sub"><a href="{{ route('approvals.index') }}">Review pending leave approvals &rarr;</a></div>
+            </div>
+            <div class="stat-icon-chip">
+                <i data-lucide="check-circle-2" style="width:20px;height:20px;"></i>
+            </div>
         </div>
     @else
         <div class="stat-box blue">
-            <div class="stat-label">Out Today (Team)</div>
-            <div class="stat-value">{{ $todayOut->count() }}</div>
-            <div class="stat-sub">{{ $todayOut->isEmpty() ? 'Full team available' : $todayOut->pluck('user.name')->implode(', ') }}</div>
+            <div>
+                <div class="stat-label">Out Today (Team)</div>
+                <div class="stat-value">{{ $todayOut->count() }}</div>
+                <div class="stat-sub">{{ $todayOut->isEmpty() ? 'Full team available' : $todayOut->pluck('user.name')->implode(', ') }}</div>
+            </div>
+            <div class="stat-icon-chip">
+                <i data-lucide="users" style="width:20px;height:20px;"></i>
+            </div>
         </div>
     @endif
 </div>
 
-<div class="aminef-card">
+<div class="aminef-card" id="teamCalendarCard">
     <div class="aminef-card-header">
         <h2 class="aminef-card-title">Team Leave Calendar (Who's Out) &mdash; {{ $currentMonth->format('F Y') }}</h2>
         <div style="display:flex;gap:6px;align-items:center;">
-            <a href="{{ route('dashboard', ['month' => $currentMonth->copy()->subMonth()->format('Y-m')]) }}" class="btn-action-uniform btn-action-neutral">&larr; Prev</a>
-            <a href="{{ route('dashboard', ['month' => now()->format('Y-m')]) }}" class="btn-action-uniform btn-action-neutral">Today</a>
-            <a href="{{ route('dashboard', ['month' => $currentMonth->copy()->addMonth()->format('Y-m')]) }}" class="btn-action-uniform btn-action-neutral">Next &rarr;</a>
+            <a href="{{ route('dashboard', ['month' => $currentMonth->copy()->subMonth()->format('Y-m')]) }}" class="btn-action-uniform btn-action-neutral cal-nav-link">&larr; Prev</a>
+            <a href="{{ route('dashboard', ['month' => now()->format('Y-m')]) }}" class="btn-action-uniform btn-action-neutral cal-nav-link">Today</a>
+            <a href="{{ route('dashboard', ['month' => $currentMonth->copy()->addMonth()->format('Y-m')]) }}" class="btn-action-uniform btn-action-neutral cal-nav-link">Next &rarr;</a>
         </div>
     </div>
     <div class="aminef-card-body" style="padding:14px;">
@@ -150,3 +176,38 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('click', async (e) => {
+        const link = e.target.closest('.cal-nav-link');
+        if (!link) return;
+        e.preventDefault();
+
+        const card = document.getElementById('teamCalendarCard');
+        if (!card) return;
+        card.style.opacity = '0.6';
+
+        try {
+            const res = await fetch(link.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!res.ok) {
+                window.location.href = link.href;
+                return;
+            }
+            const html = await res.text();
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const nextCard = doc.getElementById('teamCalendarCard');
+            if (nextCard) {
+                card.innerHTML = nextCard.innerHTML;
+                window.history.replaceState({}, '', link.href);
+            } else {
+                window.location.href = link.href;
+            }
+        } catch (_) {
+            window.location.href = link.href;
+        } finally {
+            card.style.opacity = '1';
+        }
+    });
+</script>
+@endpush

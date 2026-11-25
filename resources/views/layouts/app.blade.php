@@ -7,6 +7,9 @@
     <title>@yield('title', 'Dashboard') — AMINEF Staff Portal</title>
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/aminef.css') }}">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -32,197 +35,203 @@
     }
 @endphp
 
-<header class="topbar">
-    <div style="display:flex;align-items:center;">
-        <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Navigation">
-            <i data-lucide="menu" style="width:18px;height:18px;"></i>
-        </button>
-        <a href="{{ route('dashboard') }}" class="brand-lockup">
-            <img src="{{ asset('images/logo-aminef-2.png') }}" alt="AMINEF" style="height:30px;width:auto;object-fit:contain;">
-            <span class="brand-dot">&bull;</span>
-            <span class="brand-sub">Staff Portal</span>
-        </a>
-    </div>
-
-    <div class="topbar-right">
-        <div class="dropdown-wrap">
-            <button type="button" class="notif-btn" id="notifToggleBtn" aria-label="Notifications">
-                <i data-lucide="bell" style="width:16px;height:16px;"></i>
-                @if($unreadCount > 0)
-                    <span class="notif-badge">{{ $unreadCount }}</span>
-                @endif
-            </button>
-            <div class="flyout-card" id="notifFlyout">
-                <div class="flyout-header">
-                    <span>Notifications @if($unreadCount > 0)<span style="background:#0077c8;color:#fff;padding:1px 6px;border-radius:999px;font-size:10px;margin-left:4px;">{{ $unreadCount }}</span>@endif</span>
-                    @if($unreadCount > 0)
-                        <form method="POST" action="{{ route('notifications.read-all') }}">
-                            @csrf
-                            <button type="submit" style="background:none;border:none;color:#0077c8;font-size:11px;font-weight:600;cursor:pointer;">Mark all read</button>
-                        </form>
-                    @endif
-                </div>
-                <div class="notif-scroll">
-                    @forelse($recentNotifications as $notif)
-                        <form method="POST" action="{{ route('notifications.read', $notif->id) }}">
-                            @csrf
-                            <button type="submit" class="notif-item {{ $notif->read_at ? 'read' : '' }}">
-                                <div class="notif-item-icon">
-                                    <i data-lucide="bell-ring" style="width:14px;height:14px;"></i>
-                                </div>
-                                <div style="flex:1;min-width:0;">
-                                    <div class="notif-item-title">{{ $notif->data['title'] ?? 'Notification' }}</div>
-                                    <div class="notif-item-desc">{{ \Illuminate\Support\Str::limit($notif->data['message'] ?? '', 95) }}</div>
-                                    <div class="notif-item-time">{{ $notif->created_at->diffForHumans() }}</div>
-                                </div>
-                                @if(! $notif->read_at)
-                                    <span class="notif-unread-dot" title="Unread"></span>
-                                @endif
-                            </button>
-                        </form>
-                    @empty
-                        <div style="padding:24px 18px;text-align:center;color:#94a3b8;font-size:12px;">No notifications yet.</div>
-                    @endforelse
-                </div>
-                <div class="flyout-footer">
-                    <a href="{{ route('notifications.index') }}">Show All Notification</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="topbar-divider"></div>
-
-        <div class="dropdown-wrap">
-            <button type="button" class="profile-trigger" id="profileToggleBtn">
-                <div class="profile-text-wrap">
-                    <div class="profile-greet">Welcome {{ $authUser->name }}</div>
-                    <div class="profile-sub">{{ strtoupper($authUser->role) }} &bull; {{ $authUser->department ?? 'AMINEF Office' }}</div>
-                </div>
-                <div class="avatar-circle">{{ $authUser->initials() }}</div>
-                <i data-lucide="chevron-down" class="profile-chevron" style="width:14px;height:14px;"></i>
-            </button>
-            <div class="flyout-card" id="profileFlyout" style="width:240px;">
-                <div style="padding:14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e2e8f0;">
-                    <div class="avatar-circle" style="width:38px;height:38px;font-size:13px;">{{ $authUser->initials() }}</div>
-                    <div style="min-width:0;">
-                        <div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $authUser->name }}</div>
-                        <div style="font-size:11.5px;color:#64748b;">{{ $authUser->position ?? strtoupper($authUser->role) }}</div>
-                    </div>
-                </div>
-                <a href="{{ route('profile.index') }}" class="profile-menu-item">
-                    <i data-lucide="user" style="width:15px;height:15px;color:#0070ba;"></i>
-                    My Profile
-                </a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="profile-menu-item" style="border-top:1px solid #f1f5f9;">
-                        <i data-lucide="log-out" style="width:15px;height:15px;color:#dc2626;"></i>
-                        Logout
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</header>
-
 <div class="mobile-sidebar-backdrop" id="mobileSidebarBackdrop"></div>
+
 <div class="app-shell">
     <aside class="sidebar" id="portalSidebar">
-        <button type="button" class="sidebar-nav-toggle-row" id="sidebarToggleBtn" title="Toggle Navigation">
-            <span class="sidebar-nav-toggle-left">
-                <i data-lucide="menu" style="width:16px;height:16px;"></i>
-                <span class="sidebar-nav-label">Main Navigation</span>
-            </span>
-            <i data-lucide="chevrons-left" class="sidebar-collapse-arrow" style="width:15px;height:15px;color:#64748b;"></i>
-        </button>
-
-        <div class="nav-category">Overview</div>
-        @if($authUser->hasMenuAccess('dashboard'))
-            <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" title="Dashboard">
-                <i data-lucide="layout-dashboard" style="width:15px;height:15px;"></i>
-                <span class="nav-text">Dashboard</span>
+        <div class="sidebar-brand-header">
+            <a href="{{ route('dashboard') }}" class="sidebar-brand-link">
+                <img src="{{ asset('images/logo-aminef-db.png') }}" alt="AMINEF" class="sidebar-brand-logo" style="height:17px;">
+                <span class="sidebar-brand-tag">Staff Portal</span>
             </a>
-        @endif
-        @if($authUser->hasMenuAccess('profile'))
-            <a href="{{ route('profile.index') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" title="My Profile">
-                <i data-lucide="user-circle" style="width:15px;height:15px;"></i>
-                <span class="nav-text">My Profile</span>
-            </a>
-        @endif
+            <button type="button" class="sidebar-nav-toggle-row" id="sidebarToggleBtn" title="Collapse / Expand Sidebar">
+                <i data-lucide="panel-left" style="width:16px;height:16px;"></i>
+            </button>
+        </div>
 
-        @if($authUser->hasMenuAccess('leaves') || $authUser->hasMenuAccess('approvals'))
-            <div class="nav-category">Leave Management</div>
-            @if($authUser->hasMenuAccess('leaves'))
-                <a href="{{ route('leaves.index') }}" class="nav-link {{ request()->routeIs('leaves.*') || request()->routeIs('comp-time.*') ? 'active' : '' }}" title="Leave Requests">
-                    <i data-lucide="calendar-days" style="width:15px;height:15px;"></i>
-                    <span class="nav-text">Leave Requests</span>
+        <div class="sidebar-nav-body">
+            <div class="nav-category">Overview</div>
+            @if($authUser->hasMenuAccess('dashboard'))
+                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" title="Dashboard">
+                    <i data-lucide="layout-dashboard" style="width:16px;height:16px;"></i>
+                    <span class="nav-text">Dashboard</span>
                 </a>
             @endif
-            @if($authUser->hasMenuAccess('approvals'))
-                <a href="{{ route('approvals.index') }}" class="nav-link {{ request()->routeIs('approvals.*') ? 'active' : '' }}" title="Leave Approval">
-                    <i data-lucide="check-square" style="width:15px;height:15px;"></i>
-                    <span class="nav-text">Leave Approval</span>
-                    @if($pendingApprovalBadge > 0)
-                        <span class="nav-badge">{{ $pendingApprovalBadge }}</span>
-                    @endif
+            @if($authUser->hasMenuAccess('profile'))
+                <a href="{{ route('profile.index') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}" title="My Profile">
+                    <i data-lucide="user-circle" style="width:16px;height:16px;"></i>
+                    <span class="nav-text">My Profile</span>
                 </a>
             @endif
-        @endif
 
-        @if($authUser->hasMenuAccess('hrd_leaves') || $authUser->hasMenuAccess('hrd_employees') || $authUser->hasMenuAccess('hrd_holidays') || $authUser->hasMenuAccess('hrd_reports') || $authUser->hasMenuAccess('hrd_templates'))
-            <div class="nav-category">HRD Management</div>
-            @if($authUser->hasMenuAccess('hrd_leaves'))
-                <a href="{{ route('hrd.leaves') }}" class="nav-link {{ request()->routeIs('hrd.leaves') ? 'active' : '' }}" title="All Employee Leaves">
-                    <i data-lucide="clipboard-list" style="width:15px;height:15px;"></i>
-                    <span class="nav-text">All Employee Leaves</span>
-                </a>
+            @if($authUser->hasMenuAccess('leaves') || $authUser->hasMenuAccess('approvals'))
+                <div class="nav-category">Leave Management</div>
+                @if($authUser->hasMenuAccess('leaves'))
+                    <a href="{{ route('leaves.index') }}" class="nav-link {{ request()->routeIs('leaves.*') || request()->routeIs('comp-time.*') ? 'active' : '' }}" title="Leave Requests">
+                        <i data-lucide="calendar-days" style="width:16px;height:16px;"></i>
+                        <span class="nav-text">Leave Requests</span>
+                    </a>
+                @endif
+                @if($authUser->hasMenuAccess('approvals'))
+                    <a href="{{ route('approvals.index') }}" class="nav-link {{ request()->routeIs('approvals.*') ? 'active' : '' }}" title="Leave Approval">
+                        <i data-lucide="check-square" style="width:16px;height:16px;"></i>
+                        <span class="nav-text">Leave Approval</span>
+                        @if($pendingApprovalBadge > 0)
+                            <span class="nav-badge">{{ $pendingApprovalBadge }}</span>
+                        @endif
+                    </a>
+                @endif
             @endif
-            @if($authUser->hasMenuAccess('hrd_employees'))
-                <a href="{{ route('hrd.employees') }}" class="nav-link {{ request()->routeIs('hrd.employees*') ? 'active' : '' }}" title="Employees & Balances">
-                    <i data-lucide="users" style="width:15px;height:15px;"></i>
-                    <span class="nav-text">Employees &amp; Balances</span>
-                </a>
-            @endif
-            @if($authUser->hasMenuAccess('hrd_holidays'))
-                <a href="{{ route('hrd.holidays') }}" class="nav-link {{ request()->routeIs('hrd.holidays*') ? 'active' : '' }}" title="National Holidays">
-                    <i data-lucide="calendar-off" style="width:15px;height:15px;"></i>
-                    <span class="nav-text">National Holidays</span>
-                </a>
-            @endif
-            @if($authUser->hasMenuAccess('hrd_reports'))
-                <a href="{{ route('hrd.reports') }}" class="nav-link {{ request()->routeIs('hrd.reports*') ? 'active' : '' }}" title="Leave Recap">
-                    <i data-lucide="file-spreadsheet" style="width:15px;height:15px;"></i>
-                    <span class="nav-text">Leave Recap</span>
-                </a>
-            @endif
-            @if($authUser->hasMenuAccess('hrd_templates'))
-                <a href="{{ route('hrd.templates') }}" class="nav-link {{ request()->routeIs('hrd.templates*') ? 'active' : '' }}" title="Templates">
-                    <i data-lucide="file-text" style="width:15px;height:15px;"></i>
-                    <span class="nav-text">Templates</span>
-                </a>
-            @endif
-        @endif
 
-        @if($authUser->hasMenuAccess('admin_roles') || $authUser->hasMenuAccess('admin_staff'))
-            <div class="nav-category">System Admin</div>
-            @if($authUser->hasMenuAccess('admin_roles'))
-                <a href="{{ route('admin.roles') }}" class="nav-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}" title="Role & Menu Access">
-                    <i data-lucide="shield" style="width:15px;height:15px;"></i>
-                    <span class="nav-text">Role &amp; Menu Access</span>
-                </a>
+            @if($authUser->hasMenuAccess('hrd_leaves') || $authUser->hasMenuAccess('hrd_employees') || $authUser->hasMenuAccess('hrd_holidays') || $authUser->hasMenuAccess('hrd_reports') || $authUser->hasMenuAccess('hrd_templates'))
+                <div class="nav-category">HRD Management</div>
+                @if($authUser->hasMenuAccess('hrd_leaves'))
+                    <a href="{{ route('hrd.leaves') }}" class="nav-link {{ request()->routeIs('hrd.leaves') ? 'active' : '' }}" title="All Employee Leaves">
+                        <i data-lucide="clipboard-list" style="width:16px;height:16px;"></i>
+                        <span class="nav-text">All Employee Leaves</span>
+                    </a>
+                @endif
+                @if($authUser->hasMenuAccess('hrd_employees'))
+                    <a href="{{ route('hrd.employees') }}" class="nav-link {{ request()->routeIs('hrd.employees*') ? 'active' : '' }}" title="Employees & Balances">
+                        <i data-lucide="users" style="width:16px;height:16px;"></i>
+                        <span class="nav-text">Employees &amp; Balances</span>
+                    </a>
+                @endif
+                @if($authUser->hasMenuAccess('hrd_holidays'))
+                    <a href="{{ route('hrd.holidays') }}" class="nav-link {{ request()->routeIs('hrd.holidays*') ? 'active' : '' }}" title="National Holidays">
+                        <i data-lucide="calendar-off" style="width:16px;height:16px;"></i>
+                        <span class="nav-text">National Holidays</span>
+                    </a>
+                @endif
+                @if($authUser->hasMenuAccess('hrd_reports'))
+                    <a href="{{ route('hrd.reports') }}" class="nav-link {{ request()->routeIs('hrd.reports*') ? 'active' : '' }}" title="Leave Recap">
+                        <i data-lucide="file-spreadsheet" style="width:16px;height:16px;"></i>
+                        <span class="nav-text">Leave Recap</span>
+                    </a>
+                @endif
+                @if($authUser->hasMenuAccess('hrd_templates'))
+                    <a href="{{ route('hrd.templates') }}" class="nav-link {{ request()->routeIs('hrd.templates*') ? 'active' : '' }}" title="Templates">
+                        <i data-lucide="file-text" style="width:16px;height:16px;"></i>
+                        <span class="nav-text">Templates</span>
+                    </a>
+                @endif
             @endif
-            @if($authUser->hasMenuAccess('admin_staff'))
-                <a href="{{ route('admin.staff') }}" class="nav-link {{ request()->routeIs('admin.staff*') ? 'active' : '' }}" title="Master Data Staff">
-                    <i data-lucide="user-cog" style="width:15px;height:15px;"></i>
-                    <span class="nav-text">Master Data Staff</span>
-                </a>
+
+            @if($authUser->hasMenuAccess('admin_roles') || $authUser->hasMenuAccess('admin_staff'))
+                <div class="nav-category">System Admin</div>
+                @if($authUser->hasMenuAccess('admin_roles'))
+                    <a href="{{ route('admin.roles') }}" class="nav-link {{ request()->routeIs('admin.roles*') ? 'active' : '' }}" title="Role & Menu Access">
+                        <i data-lucide="shield" style="width:16px;height:16px;"></i>
+                        <span class="nav-text">Role &amp; Menu Access</span>
+                    </a>
+                @endif
+                @if($authUser->hasMenuAccess('admin_staff'))
+                    <a href="{{ route('admin.staff') }}" class="nav-link {{ request()->routeIs('admin.staff*') ? 'active' : '' }}" title="Master Data Staff">
+                        <i data-lucide="user-cog" style="width:16px;height:16px;"></i>
+                        <span class="nav-text">Master Data Staff</span>
+                    </a>
+                @endif
             @endif
-        @endif
+        </div>
     </aside>
 
-    <main class="main-content">
-        @yield('content')
-    </main>
+    <div class="main-wrap">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Navigation">
+                    <i data-lucide="menu" style="width:18px;height:18px;"></i>
+                </button>
+                <span class="topbar-context-pill">
+                    <span class="topbar-context-dot"></span>
+                    {{ now()->format('l, d M Y') }} &bull; WIB
+                </span>
+            </div>
+
+            <div class="topbar-right">
+                <div class="dropdown-wrap">
+                    <button type="button" class="notif-btn" id="notifToggleBtn" aria-label="Notifications">
+                        <i data-lucide="bell" style="width:16px;height:16px;"></i>
+                        @if($unreadCount > 0)
+                            <span class="notif-badge">{{ $unreadCount }}</span>
+                        @endif
+                    </button>
+                    <div class="flyout-card" id="notifFlyout">
+                        <div class="flyout-header">
+                            <span>Notifications @if($unreadCount > 0)<span style="background:#0077c8;color:#fff;padding:1px 6px;border-radius:999px;font-size:10px;margin-left:4px;">{{ $unreadCount }}</span>@endif</span>
+                            @if($unreadCount > 0)
+                                <form method="POST" action="{{ route('notifications.read-all') }}">
+                                    @csrf
+                                    <button type="submit" style="background:none;border:none;color:#0077c8;font-size:11px;font-weight:600;cursor:pointer;">Mark all read</button>
+                                </form>
+                            @endif
+                        </div>
+                        <div class="notif-scroll">
+                            @forelse($recentNotifications as $notif)
+                                <form method="POST" action="{{ route('notifications.read', $notif->id) }}">
+                                    @csrf
+                                    <button type="submit" class="notif-item {{ $notif->read_at ? 'read' : '' }}">
+                                        <div class="notif-item-icon">
+                                            <i data-lucide="bell-ring" style="width:14px;height:14px;"></i>
+                                        </div>
+                                        <div style="flex:1;min-width:0;">
+                                            <div class="notif-item-title">{{ $notif->data['title'] ?? 'Notification' }}</div>
+                                            <div class="notif-item-desc">{{ \Illuminate\Support\Str::limit($notif->data['message'] ?? '', 95) }}</div>
+                                            <div class="notif-item-time">{{ $notif->created_at->diffForHumans() }}</div>
+                                        </div>
+                                        @if(! $notif->read_at)
+                                            <span class="notif-unread-dot" title="Unread"></span>
+                                        @endif
+                                    </button>
+                                </form>
+                            @empty
+                                <div style="padding:24px 18px;text-align:center;color:#94a3b8;font-size:12px;">No notifications yet.</div>
+                            @endforelse
+                        </div>
+                        <div class="flyout-footer">
+                            <a href="{{ route('notifications.index') }}">Show All Notification</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="topbar-divider"></div>
+
+                <div class="dropdown-wrap">
+                    <button type="button" class="profile-trigger" id="profileToggleBtn">
+                        <div class="profile-text-wrap">
+                            <div class="profile-greet">{{ $authUser->name }}</div>
+                            <div class="profile-sub">{{ strtoupper($authUser->role) }} &bull; {{ $authUser->department ?? 'AMINEF Office' }}</div>
+                        </div>
+                        <div class="avatar-circle">{{ $authUser->initials() }}</div>
+                        <i data-lucide="chevron-down" class="profile-chevron" style="width:14px;height:14px;"></i>
+                    </button>
+                    <div class="flyout-card" id="profileFlyout" style="width:240px;">
+                        <div style="padding:14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e2e8f0;">
+                            <div class="avatar-circle" style="width:38px;height:38px;font-size:13px;">{{ $authUser->initials() }}</div>
+                            <div style="min-width:0;">
+                                <div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $authUser->name }}</div>
+                                <div style="font-size:11.5px;color:#64748b;">{{ $authUser->position ?? strtoupper($authUser->role) }}</div>
+                            </div>
+                        </div>
+                        <a href="{{ route('profile.index') }}" class="profile-menu-item">
+                            <i data-lucide="user" style="width:15px;height:15px;color:#0077c8;"></i>
+                            My Profile
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="profile-menu-item" style="border-top:1px solid #f1f5f9;">
+                                <i data-lucide="log-out" style="width:15px;height:15px;color:#dc2626;"></i>
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            @yield('content')
+        </main>
+    </div>
 </div>
 
 <div class="toast-container" id="toastContainer" aria-live="polite">
