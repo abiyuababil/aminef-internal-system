@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "aminef/hrd-leave-portal",
+    "name": "aminef/staff-portal",
     "type": "project",
-    "description": "AMINEF HRD Leave Request & Comp-Time Portal",
+    "description": "AMINEF Staff Portal",
     "license": "MIT",
     "require": {
         "php": "^8.2",

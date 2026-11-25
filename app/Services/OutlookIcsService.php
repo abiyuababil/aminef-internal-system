@@ -40,7 +40,7 @@ class OutlookIcsService
         $lines = [
             'BEGIN:VCALENDAR',
             'VERSION:2.0',
-            'PRODID:-//AMINEF HRD Leave Portal//EN',
+            'PRODID:-//AMINEF Staff Portal//EN',
             'CALSCALE:GREGORIAN',
             'METHOD:REQUEST',
             'BEGIN:VEVENT',
