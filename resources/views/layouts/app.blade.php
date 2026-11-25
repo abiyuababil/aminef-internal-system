@@ -141,6 +141,7 @@
                 <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Navigation">
                     <i data-lucide="menu" style="width:18px;height:18px;"></i>
                 </button>
+                <span class="mobile-topbar-brand">AMINEF Staff Portal</span>
                 <span class="topbar-context-pill">
                     <span class="topbar-context-dot"></span>
                     {{ now()->format('l, d M Y') }} &bull; WIB
