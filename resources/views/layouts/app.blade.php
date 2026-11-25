@@ -22,7 +22,10 @@
             ->where(function ($q) use ($authUser, $subordinateRoleSlugs) {
                 $q->where('supervisor_id', $authUser->id);
                 if (! empty($subordinateRoleSlugs)) {
-                    $q->orWhereHas('user', fn ($uq) => $uq->whereIn('role', $subordinateRoleSlugs));
+                    $q->orWhere(function ($sub) use ($subordinateRoleSlugs) {
+                        $sub->whereNull('supervisor_id')
+                            ->whereHas('user', fn ($uq) => $uq->whereIn('role', $subordinateRoleSlugs));
+                    });
                 }
             })
             ->count();

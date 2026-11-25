@@ -38,11 +38,9 @@
 
     @if(app()->environment('local'))
         <div style="margin-top:18px;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;font-size:12px;color:#475569;">
-            <strong>Demo Accounts (password: <code>password123</code>):</strong><br>
-            Admin: <code>admin@aminef.or.id</code><br>
-            HRD: <code>hrd@aminef.or.id</code><br>
-            Supervisor: <code>supervisor@aminef.or.id</code><br>
-            Staff: <code>staff@aminef.or.id</code>
+            <strong>Demo Account:</strong><br>
+            Email: <code>admin@aminef.or.id</code><br>
+            Password: <code>password123</code>
         </div>
     @endif
 </div>

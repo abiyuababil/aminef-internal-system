@@ -91,7 +91,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('/roles/{role}', [AdminController::class, 'destroyRole'])->middleware('menu:admin_roles')->name('roles.destroy');
 
         Route::get('/staff', [AdminController::class, 'staff'])->middleware('menu:admin_staff')->name('staff');
+        Route::get('/staff/template', [HrdController::class, 'downloadEmployeeTemplate'])->middleware('menu:admin_staff')->name('staff.template');
+        Route::post('/staff/import', [HrdController::class, 'importEmployees'])->middleware('menu:admin_staff')->name('staff.import');
         Route::post('/staff', [AdminController::class, 'storeStaff'])->middleware('menu:admin_staff')->name('staff.store');
         Route::put('/staff/{staff}', [AdminController::class, 'updateStaff'])->middleware('menu:admin_staff')->name('staff.update');
+        Route::delete('/staff/{staff}', [AdminController::class, 'destroyStaff'])->middleware('menu:admin_staff')->name('staff.destroy');
     });
 });

@@ -12,7 +12,10 @@
 <div class="aminef-card">
     <div class="aminef-card-header">
         <h2 class="aminef-card-title">All Registered Staff &amp; Accounts</h2>
-        <button type="button" class="btn-action-uniform btn-action-create" onclick="openModal('addStaffModal')">+ Add Staff</button>
+        <div style="display:flex;gap:8px;">
+            <button type="button" class="btn-action-uniform btn-action-view" onclick="openModal('importStaffModal')">Import Excel</button>
+            <button type="button" class="btn-action-uniform btn-action-create" onclick="openModal('addStaffModal')">+ Add Staff</button>
+        </div>
     </div>
     <div class="aminef-card-body">
         <form method="GET" action="{{ route('admin.staff') }}" class="filter-toolbar">
@@ -68,7 +71,16 @@
                                 </span>
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn-action-uniform btn-action-edit" onclick='openEditStaffModal(@json($s))'>Edit</button>
+                                <div style="display:flex;gap:5px;justify-content:center;">
+                                    <button type="button" class="btn-action-uniform btn-action-edit" onclick='openEditStaffModal(@json($s))'>Edit</button>
+                                    @if($s->id !== auth()->id())
+                                        <form method="POST" action="{{ route('admin.staff.destroy', $s) }}" onsubmit="return confirm({{ Js::from('Delete staff ' . $s->name . '?') }})">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn-action-uniform btn-action-delete">Delete</button>
+                                        </form>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -218,6 +230,33 @@
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" onclick="closeModal('editStaffModal')">Cancel</button>
+                    <button type="submit" class="btn-save-green">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Import Staff Modal -->
+<div class="aminef-modal-backdrop" id="importStaffModal">
+    <div class="aminef-modal" style="max-width:520px;">
+        <div class="aminef-modal-header">
+            <h3 class="aminef-modal-title">Import Master Data Staff (Excel / CSV)</h3>
+            <button type="button" class="aminef-modal-close" onclick="closeModal('importStaffModal')">&times;</button>
+        </div>
+        <div class="aminef-modal-body">
+            <div class="alert alert-info" style="margin-bottom:14px;">
+                Need the format? <a href="{{ route('admin.staff.template') }}" style="font-weight:700;text-decoration:underline;">Download Excel Template (.xlsx)</a><br>
+                <span style="font-size:12px;">If a role in the file does not exist yet, it will be <strong>auto-created</strong> with default staff menus.</span>
+            </div>
+            <form method="POST" action="{{ route('admin.staff.import') }}" enctype="multipart/form-data">
+                @csrf
+                <div class="form-group">
+                    <label class="form-label">Select File (.xlsx, .xls, .csv) <span class="text-danger">*</span></label>
+                    <input type="file" name="file" class="form-control" required accept=".xlsx,.xls,.csv">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('importStaffModal')">Cancel</button>
                     <button type="submit" class="btn-save-green">Save</button>
                 </div>
             </form>

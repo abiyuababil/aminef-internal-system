@@ -168,4 +168,19 @@ class AdminController extends Controller
 
         return back()->with('success', "Staff '{$staff->name}' updated.");
     }
+
+    public function destroyStaff(User $staff): RedirectResponse
+    {
+        if ($staff->id === Auth::id()) {
+            return back()->withErrors(['staff' => 'You cannot delete your own active account.']);
+        }
+
+        $name = $staff->name;
+        $id = $staff->id;
+        $staff->delete();
+
+        AuditLog::record(Auth::id(), 'admin_staff_deleted', 'user', $id, ['name' => $name]);
+
+        return back()->with('success', "Staff '{$name}' deleted.");
+    }
 }

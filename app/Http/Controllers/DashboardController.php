@@ -81,7 +81,10 @@ class DashboardController extends Controller
                 ->where(function ($q) use ($user, $subordinateRoleSlugs) {
                     $q->where('supervisor_id', $user->id);
                     if (! empty($subordinateRoleSlugs)) {
-                        $q->orWhereHas('user', fn ($uq) => $uq->whereIn('role', $subordinateRoleSlugs));
+                        $q->orWhere(function ($sub) use ($subordinateRoleSlugs) {
+                            $sub->whereNull('supervisor_id')
+                                ->whereHas('user', fn ($uq) => $uq->whereIn('role', $subordinateRoleSlugs));
+                        });
                     }
                 })
                 ->count();

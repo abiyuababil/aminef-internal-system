@@ -35,7 +35,10 @@ class ApprovalController extends Controller
             ->where(function ($q) use ($user, $subordinateRoleSlugs) {
                 $q->where('supervisor_id', $user->id);
                 if (! empty($subordinateRoleSlugs)) {
-                    $q->orWhereHas('user', fn ($uq) => $uq->whereIn('role', $subordinateRoleSlugs));
+                    $q->orWhere(function ($sub) use ($subordinateRoleSlugs) {
+                        $sub->whereNull('supervisor_id')
+                            ->whereHas('user', fn ($uq) => $uq->whereIn('role', $subordinateRoleSlugs));
+                    });
                 }
             });
 
@@ -56,9 +59,10 @@ class ApprovalController extends Controller
         PdfGeneratorService $pdfService
     ): RedirectResponse {
         $approver = Auth::user();
-        $isAssignedSupervisor = $leave->supervisor_id === $approver->id;
-        $isRoleApprover = $approver->role === $leave->user->roleConfig()?->approver_role_slug;
-        abort_unless($isAssignedSupervisor || $isRoleApprover, 403, 'You are not the designated approver for this request.');
+        $isAuthorized = $leave->supervisor_id
+            ? $leave->supervisor_id === $approver->id
+            : $approver->role === $leave->user->roleConfig()?->approver_role_slug;
+        abort_unless($isAuthorized, 403, 'You are not the designated approver for this request.');
         abort_unless($leave->status === 'pending', 422, 'Leave request is not pending.');
 
         $signaturePath = $signatureService->resolveOrSave($approver, $request->input('signature_data'));
@@ -127,9 +131,10 @@ class ApprovalController extends Controller
     public function rejectLeave(Request $request, LeaveRequest $leave): RedirectResponse
     {
         $approver = Auth::user();
-        $isAssignedSupervisor = $leave->supervisor_id === $approver->id;
-        $isRoleApprover = $approver->role === $leave->user->roleConfig()?->approver_role_slug;
-        abort_unless($isAssignedSupervisor || $isRoleApprover, 403, 'You are not the designated approver for this request.');
+        $isAuthorized = $leave->supervisor_id
+            ? $leave->supervisor_id === $approver->id
+            : $approver->role === $leave->user->roleConfig()?->approver_role_slug;
+        abort_unless($isAuthorized, 403, 'You are not the designated approver for this request.');
         abort_unless($leave->status === 'pending', 422);
 
         $request->validate(['rejection_reason' => ['required', 'string', 'max:500']]);
@@ -155,9 +160,10 @@ class ApprovalController extends Controller
     public function approveCancel(LeaveRequest $leave): RedirectResponse
     {
         $approver = Auth::user();
-        $isAssignedSupervisor = $leave->supervisor_id === $approver->id;
-        $isRoleApprover = $approver->role === $leave->user->roleConfig()?->approver_role_slug;
-        abort_unless($isAssignedSupervisor || $isRoleApprover, 403, 'You are not the designated approver for this request.');
+        $isAuthorized = $leave->supervisor_id
+            ? $leave->supervisor_id === $approver->id
+            : $approver->role === $leave->user->roleConfig()?->approver_role_slug;
+        abort_unless($isAuthorized, 403, 'You are not the designated approver for this request.');
         abort_unless($leave->status === 'cancel_requested', 422);
 
         DB::transaction(function () use ($leave, $approver) {
