@@ -9,9 +9,9 @@
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/aminef.css') }}">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
 </head>
 <body>
 @php
@@ -138,7 +138,7 @@
     <div class="main-wrap">
         <header class="topbar">
             <div class="topbar-left">
-                <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Navigation">
+                <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open Navigation" aria-expanded="false">
                     <i data-lucide="menu" style="width:18px;height:18px;"></i>
                 </button>
                 <span class="mobile-topbar-brand">AMINEF Staff Portal</span>
@@ -150,7 +150,7 @@
 
             <div class="topbar-right">
                 <div class="dropdown-wrap">
-                    <button type="button" class="notif-btn" id="notifToggleBtn" aria-label="Notifications">
+                    <button type="button" class="notif-btn" id="notifToggleBtn" aria-label="Notifications" aria-expanded="false" aria-controls="notifFlyout">
                         <i data-lucide="bell" style="width:16px;height:16px;"></i>
                         @if($unreadCount > 0)
                             <span class="notif-badge">{{ $unreadCount }}</span>
@@ -197,7 +197,7 @@
                 <div class="topbar-divider"></div>
 
                 <div class="dropdown-wrap">
-                    <button type="button" class="profile-trigger" id="profileToggleBtn">
+                    <button type="button" class="profile-trigger" id="profileToggleBtn" aria-expanded="false" aria-controls="profileFlyout">
                         <div class="profile-text-wrap">
                             <div class="profile-greet">{{ $authUser->name }}</div>
                             <div class="profile-sub">{{ strtoupper($authUser->role) }} &bull; {{ $authUser->department ?? 'AMINEF Office' }}</div>
@@ -263,7 +263,15 @@
 </div>
 
 <script>
-    lucide.createIcons({ attrs: { 'stroke-width': 1.8 } });
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.lucide) {
+            lucide.createIcons({ attrs: { 'stroke-width': 1.8 } });
+        }
+        document.querySelectorAll('.aminef-modal').forEach((m) => {
+            m.setAttribute('role', 'dialog');
+            m.setAttribute('aria-modal', 'true');
+        });
+    });
 
     // Right-Side Toast Notifications (Appear & Auto-Dismiss)
     function dismissToast(el) {
@@ -300,10 +308,12 @@
     function closeMobileMenu() {
         sidebar.classList.remove('mobile-open');
         mobileBackdrop.classList.remove('open');
+        mobileMenuBtn?.setAttribute('aria-expanded', 'false');
     }
     mobileMenuBtn?.addEventListener('click', () => {
-        sidebar.classList.toggle('mobile-open');
-        mobileBackdrop.classList.toggle('open', sidebar.classList.contains('mobile-open'));
+        const isOpen = sidebar.classList.toggle('mobile-open');
+        mobileBackdrop.classList.toggle('open', isOpen);
+        mobileMenuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     });
     mobileBackdrop?.addEventListener('click', closeMobileMenu);
     sidebar.querySelectorAll('.nav-link').forEach((link) => {
@@ -334,22 +344,40 @@
     const profileBtn = document.getElementById('profileToggleBtn');
     const profileFlyout = document.getElementById('profileFlyout');
 
+    function closeAllFlyouts() {
+        notifFlyout.classList.remove('open');
+        profileFlyout.classList.remove('open');
+        notifBtn.setAttribute('aria-expanded', 'false');
+        profileBtn.classList.remove('open');
+        profileBtn.setAttribute('aria-expanded', 'false');
+    }
+
     notifBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        profileFlyout.classList.remove('open');
-        profileBtn.classList.remove('open');
-        notifFlyout.classList.toggle('open');
+        const willOpen = !notifFlyout.classList.contains('open');
+        closeAllFlyouts();
+        if (willOpen) {
+            notifFlyout.classList.add('open');
+            notifBtn.setAttribute('aria-expanded', 'true');
+        }
     });
     profileBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        notifFlyout.classList.remove('open');
-        profileFlyout.classList.toggle('open');
-        profileBtn.classList.toggle('open', profileFlyout.classList.contains('open'));
+        const willOpen = !profileFlyout.classList.contains('open');
+        closeAllFlyouts();
+        if (willOpen) {
+            profileFlyout.classList.add('open');
+            profileBtn.classList.add('open');
+            profileBtn.setAttribute('aria-expanded', 'true');
+        }
     });
-    document.addEventListener('click', () => {
-        notifFlyout.classList.remove('open');
-        profileFlyout.classList.remove('open');
-        profileBtn.classList.remove('open');
+    document.addEventListener('click', closeAllFlyouts);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeAllFlyouts();
+            closeMobileMenu();
+            document.querySelectorAll('.aminef-modal-backdrop.open').forEach((m) => m.classList.remove('open'));
+        }
     });
     [notifFlyout, profileFlyout].forEach(el => el.addEventListener('click', e => e.stopPropagation()));
 

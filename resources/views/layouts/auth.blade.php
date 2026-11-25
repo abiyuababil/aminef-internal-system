@@ -6,10 +6,13 @@
     <title>@yield('title', 'Login') — AMINEF Staff Portal</title>
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/aminef.css') }}">
     <style>
         body {
-            background: #eef4fa;
+            background: var(--aminef-canvas);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -21,15 +24,15 @@
             width: 100%;
             max-width: 880px;
             background: #fff;
-            border-radius: 10px;
-            border: 1px solid #dbe5f0;
+            border-radius: 12px;
+            border: 1px solid var(--aminef-border);
             box-shadow: 0 18px 42px rgba(0, 61, 165, 0.12);
             display: grid;
             grid-template-columns: 42% 58%;
             overflow: hidden;
         }
         .split-auth-left {
-            background: linear-gradient(155deg, #004c8c 0%, #0077c8 100%);
+            background: linear-gradient(155deg, var(--aminef-cobalt-deep) 0%, var(--aminef-azure) 100%);
             color: #fff;
             display: flex;
             flex-direction: column;
@@ -39,7 +42,7 @@
         .split-auth-logo-band {
             background: #ffffff;
             padding: 28px 26px 22px;
-            border-bottom: 3px solid #00a9e0;
+            border-bottom: 3px solid var(--aminef-sky);
             text-align: center;
         }
         .split-auth-left-body {
